@@ -1,8 +1,7 @@
 use anyhow::{Result, Context};
 use clap::{Parser};
 
-use mshi_proto::tmk_open;
-
+use mshi_proto::*;
 
 #[derive(Parser, Debug)]
 #[command(about, long_about = None)]
@@ -11,19 +10,24 @@ struct Args {
     #[arg(long, value_parser = parse_hex_u16)]
     addr: u16,
 
-    /// Sub-address
+    /// Command to send
     #[arg(long, value_parser = parse_hex_u16)]
-    sub_addr: u16,
+    command: u16,
 
-    /// Message to send
-    #[arg(long, value_parser = parse_hex_u16)]
-    msg: u16,
+    /// Send message via reserve bus
+    #[arg(long)]
+    reserve_bus: bool,
+
+    /// Select device to use
+    #[arg(long, default_value = "0")]
+    device_num: usize,
+
+    /// Select a base to use
+    #[arg(long, default_value = "0")]
+    base_num: u16,
 }
 
 fn main() -> Result<()> {
-    let args = Args::parse();
-    println!("{:?}", args);
-
     {
         let tracing_sub = tracing_subscriber::fmt()
             .compact()
@@ -37,12 +41,69 @@ fn main() -> Result<()> {
             .expect("Set global tracing subscriber");
     }
 
-    tracing::info!(args.msg, to = &args.addr, "Sending");
-    unsafe { 
-        let res = tmk_open();
-        tracing::info!(res = res, "tmk_open");
+    let args = Args::parse();
+    unsafe {
+       match send(&args) {
+           Ok(_) => tracing::info!("Message sent successfully!"),
+           Err(err) => tracing::error!("{:?}", err),
+       }
+
+       // TODO: setup a signal handler and call tmk_done, tmk_close()
+       tmk_done(args.device_num);
+       tmk_close();
     }
-    tracing::info!(to = args.addr, "Connected");
+    Ok(())
+
+}
+
+unsafe fn send(args: &Args) -> Result<()> {
+
+    tracing::info!("Library init");
+    match tmk_open() {
+        res if res != 0 => anyhow::bail!("tmk_open() = {}", res),
+        _ => {},
+    }
+
+    tracing::info!(num = args.device_num, "Select device");
+    match tmk_config(args.device_num) {
+        res if res != 0 => anyhow::bail!("tmk_config() = {}", res),
+        _ => {},
+    }
+
+    tracing::info!("Set device into controller mode");
+    match bcreset() {
+        res if res != 0 => anyhow::bail!("bcreset() = {}", res),
+        _ => {},
+    }
+
+    let (bus_name, bus_num) =
+        if args.reserve_bus {
+            ("RESERVE", 1)
+        } else {
+            ("PRIMARY", 0)
+        };
+    tracing::info!("Prepare {} bus for transmission", bus_name);
+    match bcdefbus(bus_num) {
+        res if res != 0 => anyhow::bail!("bcdefbus() = {}", res),
+        _ => {},
+    }
+
+    tracing::info!("Use base {} for transmission", args.base_num);
+    match bcdefbase(args.base_num) {
+        res if res != 0 => anyhow::bail!("bcdefbase() = {}", res),
+        _ => {},
+    }
+
+    bcputw(0, mk_command(args.addr, args.command) as usize);
+
+    tracing::info!("Start transmission");
+    match bcstart(args.base_num, 0x04) {
+        res if res != 0 => anyhow::bail!("bcstart() = {}", res),
+        _ => {},
+    }
+
+    tracing::info!("Waiting for response");
+
     Ok(())
 }
 
