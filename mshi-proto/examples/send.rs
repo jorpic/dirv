@@ -10,6 +10,10 @@ struct Args {
     #[arg(long, value_parser = parse_hex_u16)]
     addr: u16,
 
+    /// Subaddress to send a message to (hexadecimal format)
+    #[arg(long, value_parser = parse_hex_u16, default_value = "1")]
+    subaddr: u16,
+
     /// Command to send (hexadecimal format)
     #[arg(long, value_parser = parse_hex_u16)]
     command: u16,
@@ -94,7 +98,8 @@ unsafe fn send(args: &Args) -> Result<()> {
         _ => {},
     }
 
-    bcputw(0, mk_command(args.addr, args.command) as usize);
+    bcputw(0, mk_words(args.addr, args.subaddr, 1) as usize);
+    bcputw(1, args.command as usize);
 
     tracing::info!("Start transmission");
     match bcstart(args.base_num, 0x04) {

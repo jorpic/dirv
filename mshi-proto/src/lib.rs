@@ -39,6 +39,13 @@ pub fn mk_command(addr: u16, command: u16) -> u16 {
 }
 
 
+pub fn mk_words(addr: u16, subaddr: u16, nwords: u16) -> u16 {
+    let transmit = 0x0400;
+    (addr << 11) | transmit | ((subaddr & 0xf) << 5) | (nwords & 0x1f)
+}
+
+
+
 
 /*
  * TmkOpen(void) -> int
