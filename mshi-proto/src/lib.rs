@@ -27,6 +27,10 @@ extern "C" {
 
     /// Start transmission
     pub fn bcstart(bcBase: u16, bcCtrlCode: u16) -> isize;
+
+    /// Wait for device events
+    #[link_name = "tmkwaitevents"]
+    pub fn tmk_waitevents(mask: usize, wait_mils: usize) -> isize;
 }
 
 pub fn mk_command(addr: u16, command: u16) -> u16 {

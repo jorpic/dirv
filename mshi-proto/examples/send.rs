@@ -6,11 +6,11 @@ use mshi_proto::*;
 #[derive(Parser, Debug)]
 #[command(about, long_about = None)]
 struct Args {
-    /// Address to send a message to
+    /// Address to send a message to (hexadecimal format)
     #[arg(long, value_parser = parse_hex_u16)]
     addr: u16,
 
-    /// Command to send
+    /// Command to send (hexadecimal format)
     #[arg(long, value_parser = parse_hex_u16)]
     command: u16,
 
@@ -102,7 +102,14 @@ unsafe fn send(args: &Args) -> Result<()> {
         _ => {},
     }
 
-    tracing::info!("Waiting for response");
+    tracing::info!("Waiting for events");
+    for _ in 0..10 {
+        match tmk_waitevents(1 << args.device_num, 1000) {
+            res if res == 0 => tracing::warn!("... no events"),
+            res if res < 0 => anyhow::bail!("tmk_waitevents() = {}", res),
+            res => anyhow::bail!("tmk_waitevents() => {}", res),
+        }
+    }
 
     Ok(())
 }
