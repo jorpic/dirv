@@ -127,10 +127,10 @@ unsafe fn send(args: &Args) -> Result<()> {
 
     tracing::info!("Waiting for events");
     for _ in 0..10 {
-        match tmk_waitevents(1 << args.device_num, 1000) {
+        match tmk_waitevents(1 << args.device_num, 200) {
             res if res == 0 => tracing::warn!("... no events"),
             res if res < 0 => anyhow::bail!("tmk_waitevents() = {}", res),
-            res => anyhow::bail!("tmk_waitevents() => {}", res),
+            _ => {},
         }
     }
 
