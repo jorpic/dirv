@@ -141,7 +141,7 @@ unsafe fn send(args: &Args) -> Result<()> {
             break;
         }
         let int = ev.interrupt;
-        tracing::info!(nInt = int, "event");
+        tracing::info!("event int={:#0x}", int);
     }
 
     tracing::info!("Contents of the base {}", args.base_num);
