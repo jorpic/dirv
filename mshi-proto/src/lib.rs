@@ -1,4 +1,12 @@
 
+#[repr(C, packed)]
+#[derive(Debug, Default)]
+pub struct TmkEventData {
+    pub interrupt: isize,
+    pub mode: u16,
+    pub data: [u16; 4]
+}
+
 extern "C" {
     #[link_name = "TmkOpen"]
     pub fn tmk_open() -> isize;
@@ -34,6 +42,8 @@ extern "C" {
     /// Wait for device events
     #[link_name = "tmkwaitevents"]
     pub fn tmk_waitevents(mask: usize, wait_mils: usize) -> isize;
+
+    pub fn tmkgetevd(pEvD: *mut TmkEventData);
 }
 
 pub fn mk_command(addr: u16, command: u16) -> u16 {

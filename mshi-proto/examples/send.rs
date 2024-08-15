@@ -134,6 +134,16 @@ unsafe fn send(args: &Args) -> Result<()> {
         }
     }
 
+    loop {
+        let mut ev = TmkEventData::default();
+        tmkgetevd(&mut ev);
+        if ev.interrupt == 0 {
+            break;
+        }
+        let int = ev.interrupt;
+        tracing::info!(nInt = int, "event");
+    }
+
     tracing::info!("Contents of the base {}", args.base_num);
     for i in 0..16 {
         let mut words = "".to_owned();
