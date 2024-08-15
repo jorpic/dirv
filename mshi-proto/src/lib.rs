@@ -25,6 +25,9 @@ extern "C" {
     /// Put a word into the selected base
     pub fn bcputw(bcAddr: usize, bcData: usize);
 
+    /// Get a word from the selected base
+    pub fn bcgetw(bcAddr: usize) -> usize;
+
     /// Start transmission
     pub fn bcstart(bcBase: u16, bcCtrlCode: u16) -> isize;
 
@@ -39,9 +42,13 @@ pub fn mk_command(addr: u16, command: u16) -> u16 {
 }
 
 
-pub fn mk_words(addr: u16, subaddr: u16, nwords: u16) -> u16 {
+pub fn mk_recv_cmd(addr: u16, subaddr: u16, nwords: u16) -> u16 {
+    (addr << 11) | ((subaddr & 0x1f) << 5) | (nwords & 0x1f)
+}
+
+pub fn mk_transmit_cmd(addr: u16, subaddr: u16, nwords: u16) -> u16 {
     let transmit = 0x0400;
-    (addr << 11) | transmit | ((subaddr & 0xf) << 5) | (nwords & 0x1f)
+    (addr << 11) | transmit | ((subaddr & 0x1f) << 5) | (nwords & 0x1f)
 }
 
 
@@ -79,6 +86,7 @@ pub fn mk_words(addr: u16, subaddr: u16, nwords: u16) -> u16 {
  * bcdefbus(BUS_A / BUS_B) -- major or reserve
  * bcstart(baseNum, format)
  *  - CTRL_CD_A = CC_FMT_6 = format 6
+ *  - DATA_RT_BC = 6
  *  - generates interrupt bcIntNorm or bcIntExc
  *
  * getansw(format) -> u32

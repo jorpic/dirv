@@ -6,6 +6,10 @@ use mshi_proto::*;
 #[derive(Parser, Debug)]
 #[command(about, long_about = None)]
 struct Args {
+    /// Transmission format (only formats 2 and 6 are supported)
+    #[arg(long)]
+    fmt: u16,
+
     /// Address to send a message to (hexadecimal format)
     #[arg(long, value_parser = parse_hex_u16)]
     addr: u16,
@@ -98,11 +102,25 @@ unsafe fn send(args: &Args) -> Result<()> {
         _ => {},
     }
 
-    bcputw(0, mk_words(args.addr, args.subaddr, 1) as usize);
-    bcputw(1, args.command as usize);
+    let format = match args.fmt {
+        6 => {
+            bcputw(0, mk_recv_cmd(args.addr, args.subaddr, 0x11) as usize);
+            bcputw(1, args.command as usize);
+
+            0x04
+        },
+        2 =>  {
+            bcputw(0, mk_transmit_cmd(args.addr, args.subaddr, 1) as usize);
+            bcputw(1, args.command as usize);
+            0x01
+        },
+        f => {
+            anyhow::bail!("unsupported format => {}", f)
+        }
+    };
 
     tracing::info!("Start transmission");
-    match bcstart(args.base_num, 0x04) {
+    match bcstart(args.base_num, format) {
         res if res != 0 => anyhow::bail!("bcstart() = {}", res),
         _ => {},
     }
@@ -114,6 +132,17 @@ unsafe fn send(args: &Args) -> Result<()> {
             res if res < 0 => anyhow::bail!("tmk_waitevents() = {}", res),
             res => anyhow::bail!("tmk_waitevents() => {}", res),
         }
+    }
+
+    tracing::info!("Contents of the base {}", args.base_num);
+    for i in 0..16 {
+        let mut words = "".to_owned();
+        for j in 0..4 {
+            let word = bcgetw(i*4 + j);
+            words.push_str(format!("{:#06x}", word).trim_start_matches("0x"));
+            words.push_str(" ");
+        }
+        tracing::info!(words);
     }
 
     Ok(())
