@@ -52,14 +52,14 @@ function App() {
 
   return (
     <div class="container is-fluid">
-      <div class="is-flex is-justify-content-flex-end mt-5">
+      <div class="is-flex is-justify-content-flex-end mt-4">
         <div class="buttons has-addons">
           {mkControlModeBtn("Ручное управление", ControlMode.Manual, "is-success")}
           {mkControlModeBtn("АИК", ControlMode.AIK, "is-warning")}
         </div>
       </div>
 
-      <div class="tabs is-boxed is-medium">
+      <div class="tabs is-boxed mt-4">
         <ul>
           {mkTab("Испытания ДИРВ", Tab.Tests, "fa-clipboard-check")}
           {mkTab("Калибровка ДИРВ", Tab.Calibration, "fa-gauge-high")}
