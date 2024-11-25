@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["aik-proto", "mshi-proto"]
+members = ["aik-proto", "mshi-proto", "ui/src-tauri"]
