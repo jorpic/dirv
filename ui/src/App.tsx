@@ -1,53 +1,77 @@
 import { useState } from "preact/hooks";
-import preactLogo from "./assets/preact.svg";
 import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+
+function cls(base, obj) {
+  return Object.entries(obj).reduce(
+    (res, [key, val]) => val ? `${res} ${key}` : res,
+    base
+  );
+}
+
+enum ControlMode {
+  Manual,
+  AIK,
+}
+
+enum Tab {
+  Tests,
+  Calibration,
+  Commands,
+  Status,
+  Logs,
+}
+
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [controlMode, setControlMode] = useState(ControlMode.Manual);
+  const [currentTab, setCurrentTab] = useState(Tab.Tests);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  const mkControlModeBtn = (name, val, color) =>
+    <button
+      onClick={_ => setControlMode(val)}
+      class={cls("button is-rounded", {
+        "is-selected": controlMode === val,
+        [color]: controlMode === val
+      })}
+    >
+      {name}
+    </button>;
 
-  console.log("Hello, world");
-  console.log({asdf: 12123, aszxcv: "zxvzxcv"});
+  const mkTab = (name, val, icon) =>
+    <li
+      class={currentTab === val ? "is-active" : ""}
+      onClick={_ => setCurrentTab(val)}
+    >
+      <a>
+        <span class="icon small"
+          ><i class={`far ${icon}`} aria-hidden="true"></i
+        ></span>
+        <span>{name}</span>
+      </a>
+    </li>;
 
   return (
-    <main class="container">
-      <h1>Welcome to Tauri + Preact</h1>
-
-      <div class="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://preactjs.com" target="_blank">
-          <img src={preactLogo} class="logo preact" alt="Preact logo" />
-        </a>
+    <div class="container is-fluid">
+      <div class="is-flex is-justify-content-flex-end mt-5">
+        <div class="buttons has-addons">
+          {mkControlModeBtn("Ручное управление", ControlMode.Manual, "is-success")}
+          {mkControlModeBtn("АИК", ControlMode.AIK, "is-warning")}
+        </div>
       </div>
-      <p>Click on the Tauri, Vite, and Preact logos to learn more.</p>
 
-      <form
-        class="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onInput={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+      <div class="tabs is-boxed is-medium">
+        <ul>
+          {mkTab("Испытания ДИРВ", Tab.Tests, "fa-clipboard-check")}
+          {mkTab("Калибровка ДИРВ", Tab.Calibration, "fa-gauge-high")}
+          {mkTab("Отработка детекторных узлов", Tab.Commands, "fa-chart-column")}
+          {mkTab("Статус", Tab.Status, "fa-jedi")}
+          {mkTab("Журнал событий", Tab.Logs, "fa-file-alt")}
+        </ul>
+      </div>
+      <section class="section">
+        tab
+      </section>
+    </div>
   );
 }
 
