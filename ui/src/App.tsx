@@ -22,7 +22,7 @@ enum Tab {
 }
 
 
-function App() {
+export function App() {
   const [controlMode, setControlMode] = useState(ControlMode.Manual);
   const [currentTab, setCurrentTab] = useState(Tab.Tests);
 
@@ -43,9 +43,9 @@ function App() {
       onClick={_ => setCurrentTab(val)}
     >
       <a>
-        <span class="icon small"
-          ><i class={`far ${icon}`} aria-hidden="true"></i
-        ></span>
+        <span class="icon">
+          <i class={`far ${icon}`} aria-hidden="true"></i>
+        </span>
         <span>{name}</span>
       </a>
     </li>;
@@ -54,25 +54,198 @@ function App() {
     <div class="container is-fluid">
       <div class="is-flex is-justify-content-flex-end mt-4">
         <div class="buttons has-addons">
-          {mkControlModeBtn("Ручное управление", ControlMode.Manual, "is-success")}
-          {mkControlModeBtn("АИК", ControlMode.AIK, "is-warning")}
+          { mkControlModeBtn("Ручное управление", ControlMode.Manual, "is-success") }
+          { mkControlModeBtn("АИК", ControlMode.AIK, "is-warning") }
         </div>
       </div>
 
       <div class="tabs is-boxed mt-4">
         <ul>
-          {mkTab("Испытания ДИРВ", Tab.Tests, "fa-clipboard-check")}
-          {mkTab("Калибровка ДИРВ", Tab.Calibration, "fa-gauge-high")}
-          {mkTab("Отработка детекторных узлов", Tab.Commands, "fa-chart-column")}
-          {mkTab("Статус", Tab.Status, "fa-jedi")}
-          {mkTab("Журнал событий", Tab.Logs, "fa-file-alt")}
+          { mkTab("Испытания ДИРВ", Tab.Tests, "fa-clipboard-check") }
+          { mkTab("Калибровка ДИРВ", Tab.Calibration, "fa-gauge-high") }
+          { mkTab("Отработка детекторных узлов", Tab.Commands, "fa-chart-column") }
+          { mkTab("Статус", Tab.Status, "fa-jedi") }
+          { mkTab("Журнал событий", Tab.Logs, "fa-file-alt") }
         </ul>
       </div>
-      <section class="section">
-        tab
-      </section>
+      <div class="m-5">
+        { currentTab === Tab.Tests && <TestsTab /> }
+        { currentTab === Tab.Calibration && <CalibrationTab /> }
+        { currentTab === Tab.Commands && <CommandsTab /> }
+        { currentTab === Tab.Status && <StatusTab /> }
+        { currentTab === Tab.Logs && <LogsTab /> }
+      </div>
     </div>
   );
 }
 
-export default App;
+export function TestsTab() {
+  return (<>
+    <div class="block is-flex is-align-items-center">
+      <h1 class="is-size-5">Полукомплект&nbsp;МСХИ</h1>
+      <p class="control buttons has-addons ml-5">
+        <button class="button is-rounded is-success is-selected">Основной</button>
+        <button class="button is-rounded -is-warning">Резервный</button>
+      </p>
+    </div>
+
+    <div class="block is-flex is-align-items-center">
+      <button class="button is-info">Запустить самотестирование ДИРВ</button>
+      <progress class="progress ml-5" style="width: 20vw;" value="15" max="100">15%</progress>
+    </div>
+
+    <div class="block">
+      <h1 class="is-size-5">Результаты тестирования</h1>
+      <ul class="ml-6" style="list-style: circle;">
+        <li class="mb-2"><span class="tag is-medium is-light is-danger">ДЗЧ</span></li>
+        <li class="mb-2"><span class="tag is-medium is-light is-danger">ДНИ</span> Ошибка</li>
+        <li class="mb-2"><span class="tag is-medium is-light is-success">ДГИ</span> OK</li>
+      </ul>
+    </div>
+  </>);
+}
+
+export function CalibrationTab() {
+  return (<>
+    <div class="columns">
+      <div class="column is-half">
+        <div class="block is-flex is-align-items-center">
+          <span class="is-size-5">Полукомплект&nbsp;МСХИ</span>
+
+          <p class="control buttons has-addons ml-5">
+            <button class="button is-rounded is-success is-selected">Основной</button>
+            <button class="button is-rounded -is-warning">Резервный</button>
+          </p>
+        </div>
+
+        <div class="block">
+          <button class="button is-info">Однократный запрос массива данных</button>
+        </div>
+
+        <div class="block">
+          <button class="button is-info">Начать опрос</button>
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="panel">
+          <div class="panel-heading">Управление узлами</div>
+          <div class="panel-block">
+            <strong>ДЗЧ</strong>
+            <p class="control buttons has-addons ml-5">
+              <button class="button is-rounded is-danger">Выкл</button>
+              <button class="button is-rounded -is-warning">Основной</button>
+              <button class="button is-rounded -is-warning">Резервный</button>
+            </p>
+          </div>
+          <div class="panel-block">
+            <strong>ДНИ</strong>
+            <p class="control buttons has-addons ml-5">
+              <button class="button is-rounded is-danger">Выкл</button>
+              <button class="button is-rounded -is-warning">Основной</button>
+              <button class="button is-rounded -is-warning">Резервный</button>
+            </p>
+          </div>
+          <div class="panel-block">
+            <strong>ДГИ</strong>
+            <p class="control buttons has-addons ml-5">
+              <button class="button is-rounded is-danger">Выкл</button>
+              <button class="button is-rounded -is-warning">Основной</button>
+              <button class="button is-rounded -is-warning">Резервный</button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="cell">
+      </div>
+      <div class="cell">
+      </div>
+      <div class="cell">
+      </div>
+      <div class="cell">
+      </div>
+    </div>
+  </>);
+}
+
+export function CommandsTab() {
+  return (<>
+    <div class="columns">
+      <div class="column is-half">
+      </div>
+      <div class="column is-half">
+        <div class="panel">
+          <div class="panel-heading">Команды</div>
+          <div class="panel-block">
+            <button class="button is-info">Команда 1</button>
+          </div>
+          <div class="panel-block">
+            <button class="button is-info">Команда 2</button>
+          </div>
+          <div class="panel-block">
+            <button class="button is-info">Команда 3</button>
+          </div>
+          <div class="panel-block">
+            <button class="button is-info">Команда 4</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column is-half">
+      </div>
+      <div class="column is-half">
+        <h1 class="is-size-5">Телеметрические данные</h1>
+        <pre style="min-height: 10vh; width: 100%; overflow: auto;">
+        </pre>
+      </div>
+    </div>
+  </>);
+}
+
+export function StatusTab() {
+  return (<>
+    <div class="block">
+      <h1 class="is-size-5">Состояние портов RS-485</h1>
+      <ul class="ml-6" style="list-style: circle;">
+        <li class="mb-2"><span class="tag is-medium is-light is-danger">/dev/ttyS1</span></li>
+        <li class="mb-2"><span class="tag is-medium is-light is-danger">/dev/ttyS2</span> Ошибка</li>
+        <li class="mb-2"><span class="tag is-medium is-light is-success">/dev/ttyS3</span> OK</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h1 class="is-size-5">Состояние портов ГОСТ Р52070</h1>
+      <ul class="ml-6" style="list-style: circle;">
+        <li class="mb-2"><span class="tag is-medium is-light is-danger">/dev/XXX</span></li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h1 class="is-size-5">Информация о подключении Ethernet</h1>
+      <ul class="ml-6" style="list-style: circle;">
+        <li class="mb-2"></li>
+        <li class="mb-2"></li>
+        <li class="mb-2"></li>
+      </ul>
+    </div>
+  </>);
+}
+
+export function LogsTab() {
+  // TODO: add a switch to control order of messages: chrono / reverse
+  const messages = [
+    {time: "1231234123", msg: "Hello"},
+    {time: "12341234",  msg: "Hello"},
+    {time: "1341231", msg: "Hello"},
+    {time: "234234523", msg: "Hello"},
+  ];
+  const style = "height: 80vh; width: 100%; overflow: auto;";
+  return (<pre style={style}>
+      {messages.map(m =>
+        <><strong>{m.time}</strong> {`${m.msg}\n`}</>
+      )}
+  </pre>);
+}
