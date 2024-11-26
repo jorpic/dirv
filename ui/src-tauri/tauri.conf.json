@@ -14,7 +14,8 @@
       {
         "title": "Тестирование ДИРВ",
         "width": 1200,
-        "height": 800
+        "height": 800,
+        "minWidth": 1200
       }
     ],
     "security": {
