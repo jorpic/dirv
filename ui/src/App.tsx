@@ -1,6 +1,11 @@
 import { useState } from "preact/hooks";
 import { invoke } from "@tauri-apps/api/core";
 
+import { BarChart } from "./BarChart";
+import { LineChart } from "./LineChart";
+
+
+// FXIME: move to util
 function cls(base, obj) {
   return Object.entries(obj).reduce(
     (res, [key, val]) => val ? `${res} ${key}` : res,
@@ -106,6 +111,8 @@ export function TestsTab() {
 }
 
 export function CalibrationTab() {
+  const [size, setSize] = useState(20);
+
   return (<>
     <div class="columns">
       <div class="column is-half">
@@ -123,7 +130,12 @@ export function CalibrationTab() {
         </div>
 
         <div class="block">
-          <button class="button is-info">Начать опрос</button>
+          <button
+            class="button is-info"
+            onClick={() => setSize(size+10)}
+          >
+            Начать опрос
+          </button>
         </div>
       </div>
 
@@ -157,14 +169,22 @@ export function CalibrationTab() {
         </div>
       </div>
     </div>
-    <div class="grid">
-      <div class="cell">
+    <div class="is-flex is-flex-wrap-wrap is-justify-content-space-evenly">
+      <div>
+        <h1 class="is-size-5">ДЗЧ − спектр</h1>
+        <BarChart width={500} height={250} size={size}/>
       </div>
-      <div class="cell">
+      <div>
+        <h1 class="is-size-5">ДЗЧ − темп счёта</h1>
+        <LineChart width={500} height={250} size={size}/>
       </div>
-      <div class="cell">
+      <div>
+        <h1 class="is-size-5">ДГИ − спектр</h1>
+        <BarChart width={500} height={250} size={size}/>
       </div>
-      <div class="cell">
+      <div>
+        <h1 class="is-size-5">ДНИ − темп счёта</h1>
+        <LineChart width={500} height={250} size={size}/>
       </div>
     </div>
   </>);
@@ -174,6 +194,13 @@ export function CommandsTab() {
   return (<>
     <div class="columns">
       <div class="column is-half">
+        <div class="tabs is-fullwidth mt-4">
+          <ul>
+            <li class="is-active"><a>ДЗЧ</a></li>
+            <li class=""><a>ДГИ</a></li>
+            <li class=""><a>ДНИ</a></li>
+          </ul>
+        </div>
       </div>
       <div class="column is-half">
         <div class="panel">
