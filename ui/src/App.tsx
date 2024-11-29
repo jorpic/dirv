@@ -1,5 +1,4 @@
 import { useState } from "preact/hooks";
-import { invoke } from "@tauri-apps/api/core";
 
 import { TestsTab } from "./tabs/TestsTab";
 import { CalibrationTab } from "./tabs/CalibrationTab";
@@ -7,14 +6,8 @@ import { CommandsTab } from "./tabs/CommandsTab";
 import { StatusTab } from "./tabs/StatusTab";
 import { LogsTab } from "./tabs/LogsTab";
 
+import { cls } from "./cls";
 
-// FXIME: move to util
-function cls(base, obj) {
-  return Object.entries(obj).reduce(
-    (res, [key, val]) => val ? `${res} ${key}` : res,
-    base
-  );
-}
 
 enum ControlMode {
   Manual,
