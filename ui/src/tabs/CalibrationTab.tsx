@@ -6,6 +6,13 @@ import { LineChart } from "@/components/LineChart";
 export function CalibrationTab() {
   const [size, setSize] = useState(20);
 
+  const mkThreeStateBtn = () =>
+    <p class="control buttons has-addons ml-5">
+      <button class="button is-rounded is-danger">Выкл</button>
+      <button class="button is-rounded -is-warning">Основной</button>
+      <button class="button is-rounded -is-warning">Резервный</button>
+    </p>;
+
   return (<>
     <div class="columns">
       <div class="column is-half">
@@ -37,27 +44,15 @@ export function CalibrationTab() {
           <div class="panel-heading">Управление узлами</div>
           <div class="panel-block">
             <strong>ДЗЧ</strong>
-            <p class="control buttons has-addons ml-5">
-              <button class="button is-rounded is-danger">Выкл</button>
-              <button class="button is-rounded -is-warning">Основной</button>
-              <button class="button is-rounded -is-warning">Резервный</button>
-            </p>
+            {mkThreeStateBtn()}
           </div>
           <div class="panel-block">
             <strong>ДНИ</strong>
-            <p class="control buttons has-addons ml-5">
-              <button class="button is-rounded is-danger">Выкл</button>
-              <button class="button is-rounded -is-warning">Основной</button>
-              <button class="button is-rounded -is-warning">Резервный</button>
-            </p>
+            {mkThreeStateBtn()}
           </div>
           <div class="panel-block">
             <strong>ДГИ</strong>
-            <p class="control buttons has-addons ml-5">
-              <button class="button is-rounded is-danger">Выкл</button>
-              <button class="button is-rounded -is-warning">Основной</button>
-              <button class="button is-rounded -is-warning">Резервный</button>
-            </p>
+            {mkThreeStateBtn()}
           </div>
         </div>
       </div>
@@ -65,19 +60,19 @@ export function CalibrationTab() {
     <div class="is-flex is-flex-wrap-wrap is-justify-content-space-evenly">
       <div>
         <h1 class="is-size-5">ДЗЧ − спектр</h1>
-        <BarChart width={500} height={250} size={size}/>
+        <BarChart width={500} height={220} size={size}/>
       </div>
       <div>
         <h1 class="is-size-5">ДЗЧ − темп счёта</h1>
-        <LineChart width={500} height={250} size={size}/>
+        <LineChart width={500} height={220} size={size}/>
       </div>
       <div>
         <h1 class="is-size-5">ДГИ − спектр</h1>
-        <BarChart width={500} height={250} size={size}/>
+        <BarChart width={500} height={220} size={size}/>
       </div>
       <div>
         <h1 class="is-size-5">ДНИ − темп счёта</h1>
-        <LineChart width={500} height={250} size={size}/>
+        <LineChart width={500} height={220} size={size}/>
       </div>
     </div>
   </>);
