@@ -1,44 +1,52 @@
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { invoke } from "@tauri-apps/api/core";
 
 import { cls } from "@/cls";
+import { DeviceGroup, globalState } from "@/globalState";
+import { runMshiSelfTest } from "@/commands";
+
 
 
 export function TestsTab() {
-  const [deviceGroup, setDeviceGroup] = useState(DeviceGroup.Primary);
-  const [testResults, setTestResults] = useState([]);
+  const [deviceGroup, setDeviceGroup] = useState(null);
+  const [testResults, setTestResults] = useState(null);
+
+  useEffect(
+    async () => {
+      setDeviceGroup(await globalState.getMshiDeviceGroup());
+      const unDeviceGroup = await globalState.onMshiDeviceGroup(setDeviceGroup);
+      return unDeviceGroup;
+    },
+    []
+  );
 
   const runTests = async () => {
-    setTestResults([]);
-    const res = await invoke(
-      "runDeviceTests",
-      { "deviceGroup": deviceGroup }
-    );
+    setTestResults(null);
+    const res = await runMshiSelfTest();
     setTestResults(res);
   };
 
   return (<>
     <div class="block is-flex is-align-items-center">
       <h1 class="is-size-5 mr-5">Полукомплект МСХИ</h1>
-      <DeviceGroupSelector value={deviceGroup} onChange={setDeviceGroup} />
+      <DeviceGroupSelector
+        value={deviceGroup}
+        onChange={globalState.setMshiDeviceGroup} />
     </div>
 
     <div class="block is-flex is-align-items-center">
       <RunTestsButton onClick={runTests} />
     </div>
 
-    <div class="block">
-      <h1 class="is-size-5">Результаты тестирования</h1>
-      <TestResults value={testResults} />
-    </div>
+    { testResults && (
+      <div class="block">
+        <h1 class="is-size-5">Результаты тестирования</h1>
+        <TestResults value={testResults} />
+      </div>
+    )}
   </>);
 }
 
-
-enum DeviceGroup {
-  Primary,
-  Secondary
-}
 
 function DeviceGroupSelector({value, onChange}) {
   const mkButton = (name, val, color) => (
@@ -52,13 +60,13 @@ function DeviceGroupSelector({value, onChange}) {
 
   return (<p class="control buttons has-addons">
     { mkButton("Основной", DeviceGroup.Primary, "is-success") }
-    { mkButton("Резервный", DeviceGroup.Secondary, "is-warning") }
+    { mkButton("Резервный", DeviceGroup.Spare, "is-warning") }
   </p>);
 }
 
 
 function RunTestsButton({onClick}) {
-  const [isBusy, setIsBusy] = useState(false); // FIXME: this is a global state
+  const [isBusy, setIsBusy] = useState(false); // FIXME: this should be a global state
 
   const handler = async () => {
     setIsBusy(true);
@@ -78,19 +86,21 @@ function RunTestsButton({onClick}) {
 }
 
 function TestResults({value}) {
-  const mkVal = res => {
+  const mkVal = ({dev, isOk}) => {
     const tagCls = cls(
       "tag is-medium is-light mr-2",
-      res.isSuccess ? "is-success" : "is-error");
+      isOk ? "is-success" : "is-error");
 
       return (<li class="mb-2">
-        <span class={tagCls}>{res.tag}</span>
-        {res.message}
+        <span class={tagCls}>{dev}</span>
+        {isOk ? "Ок" : "Ошибка"}
       </li>);
 
   };
 
   return (<ul class="ml-6" style="list-style: circle;">
-    { value.map(mkVal) }
+    { mkVal({dev: "ДЗЧ",  isOk: value.dz}) }
+    { mkVal({dev: "ДГИ",  isOk: value.dg}) }
+    { mkVal({dev: "ДНИ",  isOk: value.dn}) }
   </ul>);
 }

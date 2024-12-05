@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 
 import { TestsTab } from "./tabs/TestsTab";
 import { CalibrationTab } from "./tabs/CalibrationTab";
@@ -7,12 +7,7 @@ import { StatusTab } from "./tabs/StatusTab";
 import { LogsTab } from "./tabs/LogsTab";
 
 import { cls } from "./cls";
-
-
-enum ControlMode {
-  Manual,
-  AIK,
-}
+import { ControlMode, globalState } from "./globalState";
 
 enum Tab {
   Tests,
@@ -22,14 +17,22 @@ enum Tab {
   Logs,
 }
 
-
 export function App() {
-  const [controlMode, setControlMode] = useState(ControlMode.Manual);
+  const [controlMode, setControlMode] = useState(null);
   const [currentTab, setCurrentTab] = useState(Tab.Tests);
+
+  useEffect(
+    async () => {
+      setControlMode(await globalState.getControlMode());
+      const unControlMode = await globalState.onControlMode(setControlMode);
+      return unControlMode;
+    },
+    []
+  );
 
   const mkControlModeBtn = (name, val, color) =>
     <button
-      onClick={_ => setControlMode(val)}
+      onClick={_ => globalState.setControlMode(val)}
       class={cls("button is-rounded", {
         "is-selected": controlMode === val,
         [color]: controlMode === val
