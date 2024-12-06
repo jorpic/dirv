@@ -11,33 +11,49 @@ export enum DeviceGroup {
   Spare = "Spare"
 }
 
+type CommandError = any;
+
+
+export type MshiStatus =
+  | { tag: "Ready" }
+  | { tag: "Busy", value: MshiCommand }
+  | { tag: "Error", value: any }
+
+export enum MshiCommand {
+  RunSelfTest = "RunSelfTest"
+}
+
+
+function mkListen<EventData>(
+  eventTag: string,
+): (h: (e: EventData) => void) => Promise<UnlistenFn> {
+  return async (handler: (e: EventData) => void) => {
+    const unlisten = await listen<EventData>(
+      eventTag,
+      ev => handler(ev.payload)
+    );
+    return unlisten;
+  };
+}
+
+function mkGet<T>(command: string): () => Promise<T> {
+    return async (): Promise<T> => invoke<T>(command, {});
+}
+
+function mkSet<T>(command: string): (_: T) => Promise<CommandError> {
+    return async (val: T): Promise<CommandError> =>
+      invoke<CommandError>(command, {val});
+}
+
 export const globalState = {
-  getControlMode:
-    async (): ControlMode => invoke("get_control_mode", {}),
+  getControlMode: mkGet<ControlMode>("get_control_mode"),
+  setControlMode: mkSet<ControlMode>("set_control_mode"),
+  onControlMode: mkListen<ControlMode>("/control_mode"),
 
-  setControlMode:
-    async (val: ControlMode ) => invoke("set_control_mode", {val}),
+  getMshiDeviceGroup: mkGet<DeviceGroup>("get_mshi_device_group"),
+  setMshiDeviceGroup: mkSet<DeviceGroup>("set_mshi_device_group"),
+  onMshiDeviceGroup: mkListen<DeviceGroup>("/mshi/device_group"),
 
-  onControlMode:
-    async (handle: (_: ControlMode) => void): UnlistenFn => {
-      const unlisten = await listen<ControlMode>(
-      "/control_mode",
-      ev => handle(ev.payload)
-    );
-    return unlisten;
-  },
-
-  getMshiDeviceGroup:
-    async (): DeviceGroup => invoke("get_mshi_device_group", {}),
-  setMshiDeviceGroup:
-    async (val: DeviceGroup) => invoke("set_mshi_device_group", {val}),
-
-  onMshiDeviceGroup:
-    async (handle: (_: DeviceGroup) => void): UnlistenFn => {
-      const unlisten = await listen<DeviceGroup>(
-      "/mshi/device_group",
-      ev => handle(ev.payload)
-    );
-    return unlisten;
-  },
+  getMshiStatus: mkGet<MshiStatus>("get_mshi_status"),
+  onMshiStatus: mkListen<MshiStatus>("/mshi/status"),
 };

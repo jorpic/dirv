@@ -3,26 +3,36 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { cls } from "@/cls";
 import { DeviceGroup, globalState } from "@/globalState";
-import { runMshiSelfTest } from "@/commands";
+import { mshiSelfTest } from "@/commands";
 
 
 
 export function TestsTab() {
+  const [mshiStatus, setMshiStatus] = useState(null);
   const [deviceGroup, setDeviceGroup] = useState(null);
   const [testResults, setTestResults] = useState(null);
 
   useEffect(
     async () => {
+      setMshiStatus(await globalState.getMshiStatus());
       setDeviceGroup(await globalState.getMshiDeviceGroup());
+
+      const unMshiStatus = await globalState.onMshiStatus(setMshiStatus);
       const unDeviceGroup = await globalState.onMshiDeviceGroup(setDeviceGroup);
-      return unDeviceGroup;
+      const unSelfTestResult = await mshiSelfTest.onResult(setTestResults);
+
+      return () => {
+        unMshiStatus();
+        unDeviceGroup();
+        unSelfTestResult();
+      }
     },
     []
   );
 
   const runTests = async () => {
     setTestResults(null);
-    const res = await runMshiSelfTest();
+    const res = await mshiSelfTest.run();
     setTestResults(res);
   };
 
@@ -35,7 +45,10 @@ export function TestsTab() {
     </div>
 
     <div class="block is-flex is-align-items-center">
-      <RunTestsButton onClick={runTests} />
+      <RunTestsButton
+        isBusy={mshiStatus?.tag == "Busy"}
+        onClick={runTests}
+      />
     </div>
 
     { testResults && (
@@ -65,20 +78,12 @@ function DeviceGroupSelector({value, onChange}) {
 }
 
 
-function RunTestsButton({onClick}) {
-  const [isBusy, setIsBusy] = useState(false); // FIXME: this should be a global state
-
-  const handler = async () => {
-    setIsBusy(true);
-    await onClick();
-    setIsBusy(false);
-  };
-
+function RunTestsButton({isBusy, onClick}) {
   return (
     <button
       class={cls("button is-info", isBusy, "is-loading")}
       disabled={isBusy}
-      onClick={handler}
+      onClick={onClick}
     >
       Запустить самотестирование ДИРВ
     </button>

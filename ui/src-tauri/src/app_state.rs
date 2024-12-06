@@ -20,7 +20,7 @@ pub enum DeviceGroup {
 }
 
 #[derive(Clone, Serialize)]
-#[serde(tag = "value", content = "data")]
+#[serde(tag = "tag", content = "value")]
 pub enum DeviceStatus<Cmd, Err> {
     Ready,
     Busy(Cmd),
